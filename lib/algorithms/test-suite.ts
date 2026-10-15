@@ -1,5 +1,5 @@
 import { fourCityTestMatrix, seededMatrix, validateMatrix, validRoute } from './matrix-utils'
-import { solveBacktracking } from './backtracking'
+import { solveBacktracking, computeTwoMinLowerBound } from './backtracking'
 import { solveBruteForce } from './brute-force'
 import { Matrix } from './types'
 
@@ -16,12 +16,19 @@ export interface FourCityVerification {
   backtrackingCost: number
   expectedCost: number
   optimalRoute: string
+  rootLowerBound: number
+  expectedRootLowerBound: number
   errors: string[]
 }
 
 export function runFourCityTest(): FourCityVerification {
   const errors: string[] = []
   const matrix = fourCityTestMatrix
+
+  const rootLb = computeTwoMinLowerBound([0], matrix, 4)
+  if (rootLb !== 75) {
+    errors.push(`Root 2-Min Lower Bound expected 75, got ${rootLb}`)
+  }
 
   const btRes = solveBacktracking(matrix, 0)
 
@@ -33,6 +40,8 @@ export function runFourCityTest(): FourCityVerification {
     backtrackingCost: btRes.cost,
     expectedCost: 80,
     optimalRoute: btRes.route.map(c => `City ${String.fromCharCode(65 + c)}`).join(' → '),
+    rootLowerBound: rootLb,
+    expectedRootLowerBound: 75,
     errors
   }
 }
@@ -62,11 +71,60 @@ export function runSingleRandomTest(index: number): TestResultItem {
     const res = runFourCityTest()
     return {
       id: 0,
-      description: 'Test 0: Canonical 4-City Textbook Backtracking Verification',
+      description: 'Test 0: Canonical 4-City Textbook (Root 2-Min LB=75 & Tour Cost=80)',
       passed: res.passed,
       details: res.passed
-        ? `Optimal Backtracking tour verified: ${res.optimalRoute} with exact cost ${res.backtrackingCost}`
+        ? `Verified Root 2-Min LB = ${res.rootLowerBound} (exact) and optimal tour = ${res.optimalRoute} with cost ${res.backtrackingCost}`
         : `Errors: ${res.errors.join('; ')}`,
+      executionTimeMs: performance.now() - started
+    }
+  }
+
+  // Special case 1: Mathematical Admissibility Verification (LB <= True Completion Cost)
+  if (index === 1) {
+    const testMat = seededMatrix(5, 777)
+    let admissible = true
+    let maxDiff = 0
+
+    function checkPrefix(prefix: number[]) {
+      if (prefix.length >= 1 && prefix.length <= 5) {
+        const lb = computeTwoMinLowerBound(prefix, testMat, 5)
+        // Find true min completion for prefix
+        const inP = new Set(prefix)
+        const unvisited = [0, 1, 2, 3, 4].filter(c => !inP.has(c))
+        let trueMin = Infinity
+        function permute(curr: number[], left: number[]) {
+          if (left.length === 0) {
+            const tour = [...prefix, ...curr, prefix[0]]
+            let c = 0
+            for (let i = 0; i < tour.length - 1; i++) c += testMat[tour[i]][tour[i + 1]]
+            if (c < trueMin) trueMin = c
+            return
+          }
+          for (let i = 0; i < left.length; i++) {
+            permute([...curr, left[i]], left.slice(0, i).concat(left.slice(i + 1)))
+          }
+        }
+        permute([], unvisited)
+        if (lb > trueMin) {
+          admissible = false
+        }
+        maxDiff = Math.max(maxDiff, trueMin - lb)
+      }
+      if (prefix.length === 5) return
+      for (let i = 0; i < 5; i++) {
+        if (!prefix.includes(i)) checkPrefix([...prefix, i])
+      }
+    }
+    checkPrefix([0])
+
+    return {
+      id: 1,
+      description: 'Test 1: Lower Bound Admissibility Verification (LB ≤ True Completion Cost for all partial paths)',
+      passed: admissible,
+      details: admissible
+        ? `Strict admissibility verified across all partial paths (0 violations, max slack=${maxDiff})`
+        : 'Admissibility violation detected: LB overestimated completion cost',
       executionTimeMs: performance.now() - started
     }
   }

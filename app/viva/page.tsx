@@ -26,7 +26,7 @@ export default function VivaPage() {
     },
     {
       q: '2. What is the bounding condition used for pruning in Backtracking TSP?',
-      a: 'If the accumulated path cost plus the distance to the next candidate city is greater than or equal to the best complete tour cost found so far (currentCost + edgeWeight >= bestCost), the candidate branch is pruned immediately. Because edge weights are non-negative, any further extension of this partial path is guaranteed to cost at least bestCost and cannot yield an optimal solution.'
+      a: 'RouteWise computes an admissible Two-Minimum-Edges Lower Bound (LB) for each partial path. In any valid Hamiltonian tour, every vertex requires degree 2. The lower bound combines the fixed path edges with half the sum of minimum legal incident edges for the path endpoints and unvisited vertices: LB(P) = currentCost + ceil(1/2 * (minStart + minTip + sum_unvisited(c1 + c2))). If LB >= bestCost, the entire subtree is pruned immediately because no valid completion can achieve a lower cost than the current best tour.'
     },
     {
       q: '3. What are the time and space complexities of Backtracking TSP?',

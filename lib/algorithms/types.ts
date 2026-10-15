@@ -26,6 +26,7 @@ export interface AlgorithmEvent {
   path?: number[]
   current?: number
   cost?: number
+  lowerBound?: number
   explored?: number
   pruned?: number
   generated?: number

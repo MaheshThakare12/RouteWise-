@@ -24,6 +24,7 @@ interface BacktrackingTreeNode {
   path: number[]
   depth: number
   cost: number
+  lowerBound?: number
   status: 'active' | 'backtracked' | 'pruned' | 'solution'
   pruneReason?: string
   stepIndex: number
@@ -113,11 +114,17 @@ export function BacktrackingInspector({
             path: sub,
             depth: len - 1,
             cost: len === p.length ? (ev.cost ?? 0) : 0,
+            lowerBound: len === p.length ? ev.lowerBound : undefined,
             status: 'backtracked',
             stepIndex: i
           })
-        } else if (len === p.length && ev.cost !== undefined && ev.cost < Infinity) {
-          existing.cost = ev.cost
+        } else if (len === p.length) {
+          if (ev.cost !== undefined && ev.cost < Infinity) {
+            existing.cost = ev.cost
+          }
+          if (ev.lowerBound !== undefined) {
+            existing.lowerBound = ev.lowerBound
+          }
           existing.stepIndex = i
         }
       }
@@ -125,6 +132,9 @@ export function BacktrackingInspector({
       const tipKey = p.join('-')
       const tipNode = map.get(tipKey)
       if (tipNode) {
+        if (ev.lowerBound !== undefined) {
+          tipNode.lowerBound = ev.lowerBound
+        }
         if (ev.type === 'NODE_PRUNED') {
           tipNode.status = 'pruned'
           tipNode.pruneReason = ev.message
@@ -330,12 +340,24 @@ export function BacktrackingInspector({
           </strong>
         </div>
         <div className="p-2.5 bg-white border border-slate-200 rounded-lg shadow-2xs">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-            Current Route Cost
-          </span>
-          <strong className="text-lg font-mono font-extrabold text-slate-900">
-            {event?.cost !== undefined && event.cost < Infinity ? event.cost : 0}
-          </strong>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Route Cost / 2-Min LB
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2 mt-0.5 flex-wrap">
+            <strong className="text-lg font-mono font-extrabold text-slate-900">
+              {event?.cost !== undefined && event.cost < Infinity ? event.cost : 0}
+            </strong>
+            {event?.lowerBound !== undefined && event.lowerBound < Infinity && (
+              <span
+                className="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200"
+                title="Admissible Two-Minimum-Edges Lower Bound estimate for this branch"
+              >
+                LB: {event.lowerBound}
+              </span>
+            )}
+          </div>
         </div>
         <div className="p-2.5 bg-emerald-50/50 border border-emerald-200 rounded-lg shadow-2xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
@@ -460,7 +482,7 @@ export function BacktrackingInspector({
                       }}
                       className="cursor-pointer"
                     >
-                      <title>{`Path: ${node.path.map(c => `V${c + 1}`).join(' → ')} | Cost: ${node.cost} | Status: ${node.status.toUpperCase()}`}</title>
+                      <title>{`Path: ${node.path.map(c => `V${c + 1}`).join(' → ')} | Cost: ${node.cost}${node.lowerBound !== undefined ? ` | 2-Min LB: ${node.lowerBound}` : ''} | Status: ${node.status.toUpperCase()}`}</title>
 
                       {/* Active head or pruned flash outer ring */}
                       {(isCurrentHead || isUserSelected || isFlashingPruned) && (
@@ -499,7 +521,7 @@ export function BacktrackingInspector({
                         fontFamily="monospace"
                         fontWeight="600"
                       >
-                        {node.status === 'pruned' ? 'PRUNED' : `c:${node.cost}`}
+                        {node.status === 'pruned' ? (node.lowerBound !== undefined ? `LB:${node.lowerBound}` : 'PRUNED') : `c:${node.cost}`}
                       </text>
                     </g>
                   )
@@ -655,10 +677,20 @@ export function BacktrackingInspector({
             </div>
             <p className="leading-relaxed font-medium">{event?.message}</p>
             {isPruningStep && (
-              <div className="mt-1.5 pt-1.5 border-t border-red-200/80 text-[11px] font-mono text-red-800 flex items-center gap-1.5">
-                <AlertOctagon size={12} className="flex-none text-red-600" />
+              <div className="mt-1.5 pt-1.5 border-t border-red-200/80 text-[11px] font-mono text-red-800 flex items-start gap-1.5">
+                <AlertOctagon size={12} className="flex-none text-red-600 mt-0.5" />
                 <span>
-                  Why pruned: Partial cost ({event?.cost}) ≥ Best tour ({event?.bestCostSoFar}). Since all edge weights are positive, extending this path can never beat {event?.bestCostSoFar}.
+                  Why pruned: 2-Min Lower Bound (LB = <strong>{event?.lowerBound ?? event?.cost}</strong>) ≥ Best Tour (<strong>{event?.bestCostSoFar}</strong>). Because the 2-minimum-edges lower bound is mathematically admissible, no feasible completion of this branch can achieve cost &lt; {event?.bestCostSoFar}.
+                </span>
+              </div>
+            )}
+            {!isPruningStep && event?.lowerBound !== undefined && event.type !== 'FINISHED' && (
+              <div className="mt-1.5 pt-1.5 border-t border-slate-200/80 text-[11px] font-mono text-slate-600 flex items-center justify-between flex-wrap gap-2">
+                <span>
+                  Admissible 2-Min Lower Bound: <strong className="text-blue-700 font-bold">{event.lowerBound}</strong>
+                </span>
+                <span className="text-[10px] text-slate-500">
+                  Pruning Threshold (Incumbent): <strong className="text-emerald-700">{event.bestCostSoFar !== undefined && event.bestCostSoFar < Infinity ? event.bestCostSoFar : '∞'}</strong>
                 </span>
               </div>
             )}
