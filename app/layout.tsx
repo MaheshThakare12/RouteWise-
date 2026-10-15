@@ -22,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased bg-white text-slate-900 min-h-screen">
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning className="antialiased bg-white text-slate-900 min-h-screen">
         <TspProvider>
           <div className="app-shell flex flex-col min-h-screen bg-white">
             <AppHeader />
