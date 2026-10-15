@@ -109,10 +109,10 @@ export function MatrixPanel({
                   key={i}
                   className="p-2 text-center min-w-[76px] bg-slate-50 border border-slate-200 rounded-md align-bottom"
                 >
-                  <div className="text-blue-700 font-bold text-sm">C{i + 1}</div>
+                  <div className="text-blue-700 font-bold text-sm">V{i + 1}</div>
                   <div
                     className="text-[11px] text-slate-700 font-medium truncate max-w-[80px] mx-auto leading-tight"
-                    title={`City ${i + 1} — ${name}`}
+                    title={`Vertex ${i + 1} — ${name}`}
                   >
                     {name}
                   </div>
@@ -125,7 +125,7 @@ export function MatrixPanel({
               <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
                 <th className="p-2.5 font-mono text-left min-w-[140px] bg-slate-50 border border-slate-200 rounded-md align-middle">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-blue-700 font-bold text-sm">C{i + 1}</span>
+                    <span className="text-blue-700 font-bold text-sm">V{i + 1}</span>
                     <span className="text-slate-300 font-normal">|</span>
                     <span
                       className="text-xs text-slate-800 font-semibold truncate max-w-[96px]"
@@ -141,7 +141,7 @@ export function MatrixPanel({
                       type="number"
                       min={1}
                       disabled={i === j}
-                      aria-label={`Distance between City ${i + 1} (${names[i]}) and City ${j + 1} (${names[j]})`}
+                      aria-label={`Distance between Vertex ${i + 1} (${names[i]}) and Vertex ${j + 1} (${names[j]})`}
                       className={`w-[68px] h-[42px] text-center font-mono text-[15px] font-bold rounded-[6px] border transition-all ${
                         i === j
                           ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed select-none'

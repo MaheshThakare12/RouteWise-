@@ -33,10 +33,10 @@ export const defaultPositions: [number, number][] = [
 ]
 
 export function getCityName(index: number): string {
-  if (index < 8 && puneCities[index]) {
+  if (puneCities[index]) {
     return puneCities[index]
   }
-  return `Custom City ${index + 1}`
+  return `Vertex ${index + 1}`
 }
 
 export function getCityNames(count: number): string[] {
@@ -65,7 +65,7 @@ export function validRoute(route: number[], n: number, start = 0): boolean {
 
 export function formatRoute(route: number[], names: string[]): string {
   if (!route || route.length === 0) return 'None'
-  return route.map(i => names[i]?.split(' ')[0] || `C${i + 1}`).join(' → ')
+  return route.map(i => `V${i + 1} (${names[i]?.split(' ')[0] || `V${i + 1}`})`).join(' → ')
 }
 
 export function seededRandom(seed: number) {

@@ -460,7 +460,7 @@ export function BacktrackingInspector({
                       }}
                       className="cursor-pointer"
                     >
-                      <title>{`Path: ${node.path.map(c => `C${c + 1}`).join(' → ')} | Cost: ${node.cost} | Status: ${node.status.toUpperCase()}`}</title>
+                      <title>{`Path: ${node.path.map(c => `V${c + 1}`).join(' → ')} | Cost: ${node.cost} | Status: ${node.status.toUpperCase()}`}</title>
 
                       {/* Active head or pruned flash outer ring */}
                       {(isCurrentHead || isUserSelected || isFlashingPruned) && (
@@ -488,7 +488,7 @@ export function BacktrackingInspector({
                         fontSize="10"
                         fontWeight="800"
                       >
-                        C{node.city + 1}
+                        V{node.city + 1}
                       </text>
                       <text
                         y="8"
@@ -513,7 +513,7 @@ export function BacktrackingInspector({
             <div>
               <span className="font-semibold text-slate-700">Active DFS Branch: </span>
               <span className="font-mono text-blue-700 font-bold">
-                {(event?.path || [start]).map(c => `C${c + 1}`).join(' → ')}
+                {(event?.path || [start]).map(c => `V${c + 1}`).join(' → ')}
               </span>
             </div>
             {selectedTreeKey && (
@@ -584,7 +584,7 @@ export function BacktrackingInspector({
                             depth {frame.depth}
                           </span>
                           <strong className="text-slate-900">
-                            C{frame.city + 1} — {names[frame.city]?.split(' ').slice(0, 2).join(' ')}
+                            V{frame.city + 1} — {names[frame.city]?.split(' ').slice(0, 2).join(' ')}
                           </strong>
                         </div>
                         <span className="font-mono font-bold text-blue-800">
@@ -593,7 +593,7 @@ export function BacktrackingInspector({
                       </div>
 
                       <div className="text-[11px] text-slate-600 font-mono truncate">
-                        Prefix: {partialRoute.map(c => `C${c + 1}`).join(' → ')}
+                        Prefix: {partialRoute.map(c => `V${c + 1}`).join(' → ')}
                       </div>
                       <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1 flex-wrap">
                         <span className="font-semibold">Unvisited ({unvisited.length}):</span>
@@ -603,12 +603,12 @@ export function BacktrackingInspector({
                               key={u}
                               className="px-1 py-0.2 bg-white border border-slate-200 rounded font-mono text-slate-700"
                             >
-                              C{u + 1}
+                              V{u + 1}
                             </span>
                           ))
                         ) : (
                           <span className="italic text-emerald-700 font-medium">
-                            All cities visited — ready to close tour to C{start + 1}
+                            All vertices visited — ready to close tour to V{start + 1}
                           </span>
                         )}
                       </div>

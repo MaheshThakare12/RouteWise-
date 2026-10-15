@@ -20,6 +20,8 @@ import { useTsp } from '@/context/tsp-context'
 import { RouteMap } from '@/components/route-map'
 import { formatRoute } from '@/lib/algorithms'
 
+import { ProblemConfiguration } from '@/components/problem-configuration'
+
 export default function OverviewPage() {
   const {
     cityCount,
@@ -37,9 +39,9 @@ export default function OverviewPage() {
   const formattedRoute = currentIncumbentRoute ? formatRoute(currentIncumbentRoute, names) : 'Pending'
 
   return (
-    <div className="workspace">
+    <div className="workspace space-y-6">
       {/* Workspace Header */}
-      <div className="workspace-head border-b border-slate-200 pb-5 mb-6">
+      <div className="workspace-head border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <p className="eyebrow text-blue-700 font-bold">
             DESIGN & ANALYSIS OF ALGORITHMS • CO4 BACKTRACKING
@@ -48,20 +50,20 @@ export default function OverviewPage() {
             Travelling Salesperson Problem — Backtracking
           </h2>
           <p className="muted text-slate-600 text-sm max-w-3xl mt-1 leading-relaxed">
-            Find the minimum-cost Hamiltonian cycle visiting every city exactly once and returning to the starting point. This interactive laboratory visualizes Depth-First Search (DFS) with incumbent branch pruning to eliminate provably suboptimal subtrees.
+            Find the minimum-cost Hamiltonian cycle visiting every vertex exactly once and returning to the chosen start vertex. This interactive laboratory visualizes Depth-First Search (DFS) with incumbent branch pruning to eliminate provably suboptimal subtrees.
           </p>
         </div>
 
         {/* 3 Pastel Summary Stat Badges */}
-        <div className="head-stats flex items-center gap-4 flex-wrap mt-4 sm:mt-0">
+        <div className="head-stats flex items-center gap-3 flex-wrap">
           <div className="stat tone-blue bg-blue-50 border border-blue-200 rounded-lg p-2.5">
-            <span className="text-[10px] font-bold text-blue-600 uppercase">Configured Cities</span>
-            <strong className="text-lg font-mono text-blue-900">{cityCount} Cities</strong>
+            <span className="text-[10px] font-bold text-blue-600 uppercase">Number of Vertices</span>
+            <strong className="text-lg font-mono text-blue-900">{cityCount} Vertices</strong>
           </div>
           <div className="stat tone-green bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
-            <span className="text-[10px] font-bold text-emerald-600 uppercase">Start Vertex</span>
+            <span className="text-[10px] font-bold text-emerald-600 uppercase">Starting Vertex</span>
             <strong className="text-lg font-mono text-emerald-900">
-              C{startCity + 1} ({names[startCity]?.split(' ')[0]})
+              V{startCity + 1} ({names[startCity]?.split(' ')[0]})
             </strong>
           </div>
           <div className="stat tone-amber bg-amber-50 border border-amber-200 rounded-lg p-2.5">
@@ -70,6 +72,9 @@ export default function OverviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Clearly Visible Problem Configuration Controls */}
+      <ProblemConfiguration />
 
       {/* Main 2-Column Overview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

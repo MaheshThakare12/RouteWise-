@@ -21,6 +21,7 @@ export default function VisualizerPage() {
   const {
     cityCount,
     startCity,
+    setStartCity,
     names,
     currentMatrix,
     cursor,
@@ -65,6 +66,46 @@ export default function VisualizerPage() {
             <Button variant="outline" size="sm" className="text-xs h-8">
               <BarChart3 size={13} className="mr-1.5 text-slate-500" /> View Results
             </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Active Problem Configuration Bar */}
+      <div className="mb-4 p-3 bg-white border border-slate-200 rounded-xl shadow-xs flex items-center justify-between flex-wrap gap-3 text-xs">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-slate-500 uppercase text-[10px]">Problem Setup:</span>
+            <span className="font-mono font-bold bg-blue-50 text-blue-800 px-2.5 py-1 rounded border border-blue-200">
+              Number of Vertices: {cityCount}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <label htmlFor="vis-start-city" className="font-bold text-slate-500 uppercase text-[10px]">
+              Starting Vertex:
+            </label>
+            <select
+              id="vis-start-city"
+              value={startCity}
+              onChange={e => setStartCity(Number(e.target.value))}
+              className="bg-white text-slate-900 border border-slate-300 rounded px-2.5 py-1 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer max-w-[220px] truncate"
+              aria-label="Change Starting Vertex"
+            >
+              {names.map((name, i) => (
+                <option key={name} value={i} className="bg-white text-slate-900 font-medium py-1">
+                  V{i + 1} — {name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-slate-500 text-[11px]">
+            Best Tour: <strong className="text-emerald-700 font-bold">{currentIncumbentCost}</strong>
+          </span>
+          <Link href="/matrix" className="text-blue-600 hover:underline font-semibold text-xs">
+            Edit Matrix / Counts →
           </Link>
         </div>
       </div>

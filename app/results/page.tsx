@@ -78,6 +78,14 @@ export default function ResultsPage() {
           <p className="muted text-slate-600 text-xs mt-0.5">
             Examine the proven minimum-cost Hamiltonian cycle, computation status, branch pruning efficiency, and asymptotic complexity.
           </p>
+          <div className="flex items-center gap-2 mt-2 flex-wrap text-xs">
+            <span className="font-mono font-bold bg-blue-50 text-blue-800 px-2.5 py-0.5 rounded border border-blue-200">
+              Number of Vertices: {cityCount}
+            </span>
+            <span className="font-mono font-bold bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded border border-emerald-200">
+              Starting Vertex: V{startCity + 1} — {names[startCity]}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -172,7 +180,7 @@ export default function ResultsPage() {
                         : 'bg-slate-100 text-slate-800 border border-slate-200'
                     }`}
                   >
-                    C{city + 1}
+                    V{city + 1}
                   </span>
                   {idx < finalRoute.length - 1 && (
                     <ArrowRight size={11} className="text-slate-400" />
@@ -243,8 +251,8 @@ export default function ResultsPage() {
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px] font-bold">
                     <th className="py-2 px-2.5">Leg</th>
-                    <th className="py-2 px-2.5">Origin City</th>
-                    <th className="py-2 px-2.5">Destination City</th>
+                    <th className="py-2 px-2.5">Origin Vertex</th>
+                    <th className="py-2 px-2.5">Destination Vertex</th>
                     <th className="py-2 px-2.5 text-right">Distance</th>
                     <th className="py-2 px-2.5 text-right">Cumulative</th>
                   </tr>
@@ -254,10 +262,10 @@ export default function ResultsPage() {
                     <tr key={leg.legIndex} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-2 px-2.5 text-slate-500 font-bold">#{leg.legIndex}</td>
                       <td className="py-2 px-2.5 text-slate-800">
-                        C{leg.fromCity + 1} ({names[leg.fromCity]?.split(' ')[0]})
+                        V{leg.fromCity + 1} ({names[leg.fromCity]?.split(' ')[0]})
                       </td>
                       <td className="py-2 px-2.5 text-slate-800">
-                        C{leg.toCity + 1} ({names[leg.toCity]?.split(' ')[0]})
+                        V{leg.toCity + 1} ({names[leg.toCity]?.split(' ')[0]})
                       </td>
                       <td className="py-2 px-2.5 text-right font-bold text-blue-700">
                         {leg.dist}

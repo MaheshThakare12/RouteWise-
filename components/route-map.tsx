@@ -213,7 +213,7 @@ export function RouteMap({
 
               return (
                 <g key={`vertex-${i}`} className="city-vertex" tabIndex={0}>
-                  <title>{`${i + 1} — ${name}${isStartNode ? ' (START)' : ''}`}</title>
+                  <title>{`V${i + 1} — ${name}${isStartNode ? ' (START VERTEX)' : ''}`}</title>
 
                   {/* Outer Amber Pulse Ring for Current Active Vertex */}
                   {isCurrentHead && (

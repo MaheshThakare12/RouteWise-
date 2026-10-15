@@ -34,7 +34,7 @@ export function solveBacktracking(matrix: Matrix, start = 0, options?: SolveOpti
 
   events.push({
     type: 'START',
-    message: `Depth-First Backtracking initialized from start city ${start + 1}.`,
+    message: `Depth-First Backtracking initialized from start vertex V${start + 1}.`,
     path: [start],
     current: start,
     cost: 0,
@@ -97,7 +97,7 @@ export function solveBacktracking(matrix: Matrix, start = 0, options?: SolveOpti
     if (isAnimated) {
       events.push({
         type: 'NODE_EXPANDING',
-        message: `Expanding city C${u + 1} at depth ${path.length - 1} (path cost: ${currentCost}).`,
+        message: `Expanding vertex V${u + 1} at depth ${path.length - 1} (path cost: ${currentCost}).`,
         path: [...path],
         current: u,
         cost: currentCost,
@@ -120,7 +120,7 @@ export function solveBacktracking(matrix: Matrix, start = 0, options?: SolveOpti
       if (isAnimated) {
         events.push({
           type: 'BOUND_COMPUTED',
-          message: `Complete tour reached: ${completeTour.map(c => `C${c + 1}`).join(' → ')} with cost ${totalCost}.`,
+          message: `Complete tour reached: ${completeTour.map(c => `V${c + 1}`).join(' → ')} with cost ${totalCost}.`,
           path: completeTour,
           current: start,
           cost: totalCost,
@@ -165,7 +165,7 @@ export function solveBacktracking(matrix: Matrix, start = 0, options?: SolveOpti
         if (isAnimated) {
           events.push({
             type: 'NODE_GENERATED',
-            message: `Considering branch C${u + 1} → C${v + 1} (edge weight = ${edgeWeight}, partial cost = ${nextCost}).`,
+            message: `Considering branch V${u + 1} → V${v + 1} (edge weight = ${edgeWeight}, partial cost = ${nextCost}).`,
             path: [...path, v],
             current: v,
             cost: nextCost,
@@ -184,7 +184,7 @@ export function solveBacktracking(matrix: Matrix, start = 0, options?: SolveOpti
           if (isAnimated) {
             events.push({
               type: 'NODE_PRUNED',
-              message: `Pruning branch C${u + 1} → C${v + 1}: partial cost ${nextCost} ≥ incumbent best ${bestCost}.`,
+              message: `Pruning branch V${u + 1} → V${v + 1}: partial cost ${nextCost} ≥ incumbent best ${bestCost}.`,
               path: [...path, v],
               current: v,
               cost: nextCost,
@@ -198,7 +198,7 @@ export function solveBacktracking(matrix: Matrix, start = 0, options?: SolveOpti
             })
             events.push({
               type: 'EDGE_REJECTED',
-              message: `Edge C${u + 1} → C${v + 1} rejected due to bounding condition.`,
+              message: `Edge V${u + 1} → V${v + 1} rejected due to bounding condition.`,
               path: [...path],
               current: u,
               cost: currentCost,
@@ -215,7 +215,7 @@ export function solveBacktracking(matrix: Matrix, start = 0, options?: SolveOpti
           if (isAnimated) {
             events.push({
               type: 'EDGE_SELECTED',
-              message: `Advancing along edge C${u + 1} → C${v + 1}.`,
+              message: `Advancing along edge V${u + 1} → V${v + 1}.`,
               path: [...path, v],
               current: v,
               cost: nextCost,
@@ -236,7 +236,7 @@ export function solveBacktracking(matrix: Matrix, start = 0, options?: SolveOpti
           if (isAnimated) {
             events.push({
               type: 'BACKTRACK',
-              message: `Backtracking from C${v + 1} to C${u + 1}.`,
+              message: `Backtracking from V${v + 1} to V${u + 1}.`,
               path: [...path],
               current: u,
               cost: currentCost,
