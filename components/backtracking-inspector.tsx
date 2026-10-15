@@ -12,7 +12,9 @@ import {
   AlertOctagon,
   CornerUpLeft,
   ArrowRight,
-  ScrollText
+  ScrollText,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 
 interface BacktrackingTreeNode {
@@ -50,6 +52,8 @@ export function BacktrackingInspector({
   const stack = event?.stack || []
   const activeLine = event?.pseudocodeLine ?? 0
   const [selectedTreeKey, setSelectedTreeKey] = useState<string | null>(null)
+  const [bottomSectionOpen, setBottomSectionOpen] = useState(true)
+  const [activeBottomTab, setActiveBottomTab] = useState<'both' | 'pseudocode' | 'log'>('both')
   const treeScrollRef = useRef<HTMLDivElement | null>(null)
   const logScrollRef = useRef<HTMLDivElement | null>(null)
 
@@ -663,90 +667,170 @@ export function BacktrackingInspector({
       </div>
 
       {/* BOTTOM SECTION — PSEUDOCODE TRACE & CHRONOLOGICAL DECISION LOG */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left: Backtracking Pseudocode with Active Line Highlight */}
-        <div className="lg:col-span-6 p-3.5 bg-white border border-slate-200 rounded-lg">
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-            <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-              <Terminal size={13} className="text-blue-600" /> Recursive Backtracking Pseudocode
+      <div className="border border-slate-200 rounded-lg bg-white overflow-hidden shadow-2xs">
+        <div className="flex items-center justify-between p-2.5 bg-slate-50 border-b border-slate-200 flex-wrap gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <Terminal size={13} className="text-blue-600" /> Trace Details
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">
-              Executing Line #{activeLine + 1}
-            </span>
+            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded p-0.5 text-[11px]">
+              <button
+                type="button"
+                onClick={() => {
+                  setBottomSectionOpen(true)
+                  setActiveBottomTab('both')
+                }}
+                className={`px-2 py-0.5 rounded font-medium transition-colors ${
+                  bottomSectionOpen && activeBottomTab === 'both'
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Side-by-Side
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setBottomSectionOpen(true)
+                  setActiveBottomTab('pseudocode')
+                }}
+                className={`px-2 py-0.5 rounded font-medium transition-colors ${
+                  bottomSectionOpen && activeBottomTab === 'pseudocode'
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Pseudocode
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setBottomSectionOpen(true)
+                  setActiveBottomTab('log')
+                }}
+                className={`px-2 py-0.5 rounded font-medium transition-colors ${
+                  bottomSectionOpen && activeBottomTab === 'log'
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Decision Log
+              </button>
+            </div>
           </div>
-          <pre className="text-[11px] font-mono leading-relaxed bg-slate-50 p-2.5 rounded border border-slate-200 text-slate-800 overflow-x-auto">
-            {BACKTRACKING_PSEUDOCODE.map((line, idx) => {
-              const isHighlight = idx === activeLine
-              return (
-                <div
-                  key={idx}
-                  className={`py-0.5 px-1.5 rounded transition-colors ${
-                    isHighlight
-                      ? 'bg-blue-100 text-blue-950 font-bold border-l-4 border-blue-600 pl-2'
-                      : 'text-slate-600'
-                  }`}
-                >
-                  <span className="inline-block w-5 text-slate-400 select-none text-[10px]">
-                    {idx + 1}
-                  </span>
-                  {line}
-                </div>
-              )
-            })}
-          </pre>
-        </div>
 
-        {/* Right: Chronological Decision Log */}
-        <div className="lg:col-span-6 p-3.5 bg-white border border-slate-200 rounded-lg flex flex-col">
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-            <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-              <ScrollText size={13} className="text-blue-600" /> Chronological Decision Log (Steps 1–{cursor + 1})
-            </span>
-            <span className="text-[10px] text-slate-500 font-mono">
-              Choices • Pruning • Backtracking
-            </span>
-          </div>
-
-          <div
-            ref={logScrollRef}
-            className="space-y-1 max-h-48 overflow-y-auto pr-1 font-mono text-[11px]"
+          <button
+            type="button"
+            onClick={() => setBottomSectionOpen(!bottomSectionOpen)}
+            className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 cursor-pointer"
           >
-            {decisionLog.map(({ step, ev }) => {
-              const isCurrent = step === cursor
-              let badgeClass = 'bg-slate-100 text-slate-700'
-              if (ev.type === 'NODE_PRUNED' || ev.type === 'EDGE_REJECTED') {
-                badgeClass = 'bg-red-100 text-red-800 font-bold'
-              } else if (ev.type === 'BEST_SOLUTION_FOUND') {
-                badgeClass = 'bg-emerald-100 text-emerald-800 font-bold'
-              } else if (ev.type === 'BACKTRACK') {
-                badgeClass = 'bg-amber-100 text-amber-800'
-              } else if (ev.type === 'EDGE_SELECTED' || ev.type === 'NODE_EXPANDING') {
-                badgeClass = 'bg-blue-100 text-blue-800'
-              }
-
-              return (
-                <button
-                  key={step}
-                  type="button"
-                  onClick={() => onStepSelect?.(step)}
-                  className={`w-full text-left px-2 py-1 rounded flex items-center gap-2 border transition-colors ${
-                    isCurrent
-                      ? 'bg-blue-50 border-blue-300 text-slate-900 font-semibold'
-                      : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <span className="text-[10px] text-slate-400 w-9 flex-none">
-                    #{String(step + 1).padStart(3, '0')}
-                  </span>
-                  <span className={`text-[9px] px-1.5 py-0.2 rounded flex-none ${badgeClass}`}>
-                    {ev.type}
-                  </span>
-                  <span className="truncate font-sans text-xs">{ev.message}</span>
-                </button>
-              )
-            })}
-          </div>
+            {bottomSectionOpen ? (
+              <>
+                <span>Collapse</span>
+                <ChevronUp size={14} />
+              </>
+            ) : (
+              <>
+                <span>Expand (Pseudocode & Log)</span>
+                <ChevronDown size={14} />
+              </>
+            )}
+          </button>
         </div>
+
+        {bottomSectionOpen && (
+          <div className="p-3.5 bg-white">
+            <div className={`grid grid-cols-1 ${activeBottomTab === 'both' ? 'lg:grid-cols-12 gap-4' : 'gap-0'}`}>
+              {/* Pseudocode Panel */}
+              {(activeBottomTab === 'both' || activeBottomTab === 'pseudocode') && (
+                <div className={activeBottomTab === 'both' ? 'lg:col-span-6' : 'w-full'}>
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <Terminal size={13} className="text-blue-600" /> Recursive Backtracking Pseudocode
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      Executing Line #{activeLine + 1}
+                    </span>
+                  </div>
+                  <pre className="text-[11px] font-mono leading-relaxed bg-slate-50 p-2.5 rounded border border-slate-200 text-slate-800 overflow-x-auto max-h-56">
+                    {BACKTRACKING_PSEUDOCODE.map((line, idx) => {
+                      const isHighlight = idx === activeLine
+                      return (
+                        <div
+                          key={idx}
+                          className={`py-0.5 px-1.5 rounded transition-colors ${
+                            isHighlight
+                              ? 'bg-blue-100 text-blue-950 font-bold border-l-4 border-blue-600 pl-2'
+                              : 'text-slate-600'
+                          }`}
+                        >
+                          <span className="inline-block w-5 text-slate-400 select-none text-[10px]">
+                            {idx + 1}
+                          </span>
+                          {line}
+                        </div>
+                      )
+                    })}
+                  </pre>
+                </div>
+              )}
+
+              {/* Chronological Decision Log */}
+              {(activeBottomTab === 'both' || activeBottomTab === 'log') && (
+                <div className={activeBottomTab === 'both' ? 'lg:col-span-6' : 'w-full'}>
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <ScrollText size={13} className="text-blue-600" /> Chronological Decision Log (Steps 1–{cursor + 1})
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      Choices • Pruning • Backtracking
+                    </span>
+                  </div>
+
+                  <div
+                    ref={logScrollRef}
+                    className="space-y-1 max-h-56 overflow-y-auto pr-1 font-mono text-[11px]"
+                  >
+                    {decisionLog.map(({ step, ev }) => {
+                      const isCurrent = step === cursor
+                      let badgeClass = 'bg-slate-100 text-slate-700'
+                      if (ev.type === 'NODE_PRUNED' || ev.type === 'EDGE_REJECTED') {
+                        badgeClass = 'bg-red-100 text-red-800 font-bold'
+                      } else if (ev.type === 'BEST_SOLUTION_FOUND') {
+                        badgeClass = 'bg-emerald-100 text-emerald-800 font-bold'
+                      } else if (ev.type === 'BACKTRACK') {
+                        badgeClass = 'bg-amber-100 text-amber-800'
+                      } else if (ev.type === 'EDGE_SELECTED' || ev.type === 'NODE_EXPANDING') {
+                        badgeClass = 'bg-blue-100 text-blue-800'
+                      }
+
+                      return (
+                        <button
+                          key={step}
+                          type="button"
+                          onClick={() => onStepSelect?.(step)}
+                          className={`w-full text-left px-2 py-1 rounded flex items-center gap-2 border transition-colors ${
+                            isCurrent
+                              ? 'bg-blue-50 border-blue-300 text-slate-900 font-semibold'
+                              : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-[10px] text-slate-400 w-9 flex-none">
+                            #{String(step + 1).padStart(3, '0')}
+                          </span>
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded flex-none ${badgeClass}`}>
+                            {ev.type}
+                          </span>
+                          <span className="truncate font-sans text-xs">{ev.message}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
