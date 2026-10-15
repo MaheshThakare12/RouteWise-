@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { runFourCityTest, runSingleRandomTest, TestResultItem } from '@/lib/algorithms/test-suite'
-import { ShieldCheck, CheckCircle2, AlertTriangle, Play, RefreshCw, Layers } from 'lucide-react'
+import { ShieldCheck, CheckCircle2, AlertTriangle, Play, RefreshCw, Layers, GitBranch } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function TestSuiteTab() {
@@ -43,16 +43,17 @@ export function TestSuiteTab() {
 
   return (
     <div className="space-y-4">
-      {/* 1. Known 4-City Textbook LCBB Test Card */}
+      {/* 1. Canonical 4-City Textbook Backtracking Verification */}
       <section className="panel p-4 bg-white border border-slate-200 rounded-lg">
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
           <div>
             <p className="eyebrow">CANONICAL TEXTBOOK VERIFICATION</p>
-            <h2 className="text-base font-bold text-slate-900">
-              Known 4-City Matrix-Reduction LCBB Case
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <GitBranch size={16} className="text-blue-600" />
+              Known 4-City Textbook Backtracking Optimum Case
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Input: A-B=10, A-C=15, A-D=20, B-C=35, B-D=25, C-D=30.
+              Input: A-B=10, A-C=15, A-D=20, B-C=35, B-D=25, C-D=30 (Known Optimum Cost = 80).
             </p>
           </div>
 
@@ -74,58 +75,30 @@ export function TestSuiteTab() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
-          <div className="p-2 bg-slate-50 rounded border border-slate-100">
-            <span className="text-[10px] text-slate-400 block uppercase">Row Red.</span>
-            <strong className="text-slate-800 font-mono text-sm">
-              {fourCityResult.rowReduction}
-            </strong>
-            <span className="text-[10px] text-emerald-600 block">(Expected: 55)</span>
-          </div>
-
-          <div className="p-2 bg-slate-50 rounded border border-slate-100">
-            <span className="text-[10px] text-slate-400 block uppercase">Col Red.</span>
-            <strong className="text-slate-800 font-mono text-sm">
-              {fourCityResult.colReduction}
-            </strong>
-            <span className="text-[10px] text-emerald-600 block">(Expected: 15)</span>
-          </div>
-
-          <div className="p-2 bg-slate-50 rounded border border-slate-100">
-            <span className="text-[10px] text-slate-400 block uppercase">Root Bound</span>
-            <strong className="text-blue-700 font-mono text-sm">
-              {fourCityResult.rootBound}
-            </strong>
-            <span className="text-[10px] text-emerald-600 block">(Expected: 70)</span>
-          </div>
-
-          <div className="p-2 bg-slate-50 rounded border border-slate-100">
-            <span className="text-[10px] text-slate-400 block uppercase">Backtracking</span>
-            <strong className="text-slate-800 font-mono text-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+          <div className="p-2.5 bg-blue-50/60 rounded border border-blue-200">
+            <span className="text-[10px] text-blue-700 block uppercase font-bold">Backtracking Cost</span>
+            <strong className="text-blue-900 font-mono text-base">
               {fourCityResult.backtrackingCost}
             </strong>
             <span className="text-[10px] text-emerald-600 block">(Expected: 80)</span>
           </div>
 
-          <div className="p-2 bg-slate-50 rounded border border-slate-100">
-            <span className="text-[10px] text-slate-400 block uppercase">LCBB Cost</span>
-            <strong className="text-slate-800 font-mono text-sm">
-              {fourCityResult.lcbbCost}
+          <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
+            <span className="text-[10px] text-slate-500 block uppercase font-bold">Expected Optimum</span>
+            <strong className="text-slate-800 font-mono text-base">
+              {fourCityResult.expectedCost}
             </strong>
-            <span className="text-[10px] text-emerald-600 block">(Expected: 80)</span>
+            <span className="text-[10px] text-slate-500 block">Exact ground truth</span>
           </div>
 
-          <div className="p-2 bg-slate-50 rounded border border-slate-100">
-            <span className="text-[10px] text-slate-400 block uppercase">Held-Karp</span>
-            <strong className="text-slate-800 font-mono text-sm">
-              {fourCityResult.heldKarpCost}
+          <div className="p-2.5 bg-slate-50 rounded border border-slate-200 sm:col-span-2">
+            <span className="text-[10px] text-slate-500 block uppercase font-bold">Optimal Tour Route</span>
+            <strong className="text-slate-800 font-mono text-xs block truncate mt-0.5">
+              {fourCityResult.optimalRoute}
             </strong>
-            <span className="text-[10px] text-emerald-600 block">(Expected: 80)</span>
+            <span className="text-[10px] text-emerald-600 block">Valid Hamiltonian cycle starting at City A</span>
           </div>
-        </div>
-
-        <div className="mt-2.5 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
-          Optimal Tour Verified: <strong className="text-blue-700">{fourCityResult.optimalRoute}</strong> (Cost = 80)
         </div>
       </section>
 
@@ -134,11 +107,12 @@ export function TestSuiteTab() {
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
           <div>
             <p className="eyebrow">AUTOMATED TEST HARNESS</p>
-            <h2 className="text-base font-bold text-slate-900">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <ShieldCheck size={16} className="text-blue-600" />
               200 Reproducible Random Matrix Assertions (n = 4..9)
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Tests Backtracking, LCBB, and Held-Karp against independent Brute Force ground truth.
+              Tests Backtracking against independent Brute Force ground truth for exact tour cost and valid cycle structure.
             </p>
           </div>
 
@@ -159,7 +133,7 @@ export function TestSuiteTab() {
         {running && (
           <div className="mb-4">
             <div className="flex justify-between text-xs text-slate-600 mb-1">
-              <span>Executing test batch...</span>
+              <span>Executing Backtracking test batch...</span>
               <span>{completed} / 200 ({((completed / 200) * 100).toFixed(0)}%)</span>
             </div>
             <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
@@ -248,7 +222,7 @@ export function TestSuiteTab() {
           <div className="p-8 text-center text-slate-500 bg-slate-50 border border-slate-100 rounded-lg">
             <p className="text-sm font-medium">Test harness ready.</p>
             <p className="text-xs text-slate-400 mt-1">
-              Click &quot;Run 200 Tests&quot; to execute all 200 seeded test cases and verify all three algorithms against brute force.
+              Click &quot;Run 200 Tests&quot; to execute all 200 seeded test cases and verify Backtracking against Brute Force ground truth.
             </p>
           </div>
         )}

@@ -317,7 +317,6 @@ export function solveBacktracking(matrix: Matrix, start = 0, options?: SolveOpti
     generated,
     explored,
     pruned,
-    dpStates: 0,
     duration,
     timedOut,
     cancelled,

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { X, BookOpen, HelpCircle, CheckCircle2 } from 'lucide-react'
+import { X, BookOpen, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface VivaDrawerProps {
@@ -14,24 +14,24 @@ export function VivaDrawer({ open, onClose }: VivaDrawerProps) {
 
   const vivaQuestions = [
     {
-      q: '1. Why is the LCBB lower bound valid?',
-      a: 'The matrix reduction lower bound subtracts the minimum edge leaving each row and entering each column. Because any valid Travelling Salesperson tour must enter and leave every city exactly once, the sum of these row and column minimums represents an unavoidable lower bound on the tour cost. Since the actual edge chosen cannot cost less than the row/column minimum, the reduction sum never overestimates the true completion cost, preserving admissibility.'
+      q: '1. How does the Backtracking algorithm solve the Travelling Salesperson Problem?',
+      a: 'Backtracking models TSP as finding a Hamiltonian cycle permutation of minimum cost. It performs Depth-First Search (DFS) over the state-space tree of permutations, maintaining the current tour path and running cost. At each recursive step, it explores an unvisited city, advances deeper into the tree, and backtracks upon reaching a leaf or when bounding conditions are triggered.'
     },
     {
-      q: '2. How does LCBB differ from backtracking?',
-      a: 'Backtracking uses Depth-First Search (DFS) with a Last-In First-Out (LIFO) stack, exploring deeply along a single path and pruning only when the accumulated cost exceeds the best incumbent. In contrast, Least Cost Branch & Bound uses Best-First Search with a min-heap priority queue, always expanding the unvisited state with the smallest lower bound regardless of depth. LCBB usually explores significantly fewer nodes on dense graphs at the expense of higher memory (storing matrices in the heap).'
+      q: '2. What is the bounding condition used for pruning in Backtracking TSP?',
+      a: 'If the accumulated path cost plus the distance to the next candidate city is greater than or equal to the best complete tour cost found so far (currentCost + edgeWeight >= bestCost), the candidate branch is pruned immediately. Because edge weights are non-negative, any further extension of this partial path is guaranteed to cost at least bestCost and cannot yield an optimal solution.'
     },
     {
-      q: '3. Why does Held-Karp contain a 2ⁿ factor?',
-      a: 'In the Bellman-Held-Karp dynamic programming formulation, a state is defined as dp[S][j], where S is the subset of cities visited so far, and j is the ending city. For a graph of n cities, there are 2ⁿ possible subsets of vertices. For each subset S, there are at most n candidate ending cities, leading to O(n · 2ⁿ) distinct states and O(n² · 2ⁿ) total transition operations.'
+      q: '3. What are the time and space complexities of Backtracking TSP?',
+      a: 'Time complexity: In the worst case, Backtracking explores all (n - 1)! possible permutations, yielding O((n - 1)!) time (equivalent to exhaustive search). However, branch pruning drastically cuts down the search space in practice. Space complexity: O(n) auxiliary space is required for the recursion call stack and the visited array, making Backtracking extremely memory-efficient.'
     },
     {
-      q: '4. Which algorithm is fastest and when?',
-      a: 'There is no universal winner because performance depends on n and graph structure: for very small n (≤ 12), Held-Karp is completely predictable and very fast because it avoids recursive tree overhead; for graphs where edge weights have wide variance, LCBB prunes aggressively and can terminate far quicker than Held-Karp; Backtracking has O(n) space complexity and is ideal when memory is heavily constrained.'
+      q: '4. How does edge ordering and early incumbent discovery affect pruning efficiency?',
+      a: 'The sooner a high-quality incumbent (low-cost complete tour) is found, the lower the pruning threshold becomes. When candidates are ordered heuristically (e.g. exploring nearest neighbors first), DFS discovers near-optimal tours early, allowing the bounding condition to prune large subtrees near the top of the search space.'
     },
     {
-      q: '5. Why is TSP NP-hard?',
-      a: 'The decision version of TSP ("Does there exist a tour of length ≤ k?") is NP-complete by polynomial-time reduction from the Hamiltonian Cycle problem. Given an unweighted graph G, we assign edge weights of 1 for existing edges and 2 (or ∞) for non-edges; a TSP tour of cost n exists if and only if G contains a Hamiltonian cycle. Because solving the TSP optimization problem immediately answers the decision problem, TSP optimization is NP-hard.'
+      q: '5. Why is the Travelling Salesperson Problem NP-hard?',
+      a: 'The decision version of TSP ("Does there exist a tour of length <= k?") is NP-complete by polynomial-time reduction from the Hamiltonian Cycle problem. Given an unweighted graph G, we assign edge weights of 1 for existing edges and 2 (or infinity) for non-edges; a TSP tour of cost n exists if and only if G contains a Hamiltonian cycle. Because solving the TSP optimization problem immediately answers the decision problem, TSP optimization is NP-hard.'
     }
   ]
 
@@ -63,10 +63,8 @@ export function VivaDrawer({ open, onClose }: VivaDrawerProps) {
             DAA Course Outcome (CO) Alignment
           </span>
           <ul className="space-y-1 text-blue-800 list-disc list-inside">
-            <li><strong>CO3:</strong> Dynamic Programming — Held-Karp Bellman Recurrence</li>
-            <li><strong>CO4:</strong> Backtracking — DFS Permutation Search with Incumbent Pruning</li>
-            <li><strong>CO5:</strong> Branch and Bound — Matrix Reduction LCBB & Priority Queue</li>
-            <li><strong>CO6:</strong> Complexity Theory — NP-Hardness, Reductions & Approximation</li>
+            <li><strong>CO4:</strong> Backtracking — DFS Permutation State-Space Tree with Incumbent Pruning</li>
+            <li><strong>CO6:</strong> Complexity Theory — NP-Hardness, Factorial State Space O(n!), and O(n) Stack Space</li>
           </ul>
         </div>
 
@@ -106,7 +104,7 @@ export function VivaDrawer({ open, onClose }: VivaDrawerProps) {
             <strong>2. Hamiltonian Cycle Reduction:</strong> Hamiltonian Cycle (known NP-complete) reduces to TSP in polynomial time. Thus, if a polynomial-time algorithm existed for TSP, P would equal NP.
           </p>
           <p className="text-slate-600 leading-relaxed">
-            <strong>3. Why Exact Solvers Matter for Small Inputs:</strong> While asymptotic factorial growth (n−1)!/2 makes n=50 intractable for exact solvers, engineering exact solvers for n ≤ 20 is essential in local delivery routing, VLSI circuit hole drilling, and robotics wayfinding.
+            <strong>3. Why Exact Solvers Matter for Small Inputs:</strong> While asymptotic factorial growth (n−1)!/2 makes n=50 intractable for exact solvers, engineering exact solvers for n ≤ 12 is essential in local delivery routing, VLSI circuit hole drilling, and robotics wayfinding.
           </p>
         </div>
       </aside>

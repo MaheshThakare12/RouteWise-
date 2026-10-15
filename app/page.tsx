@@ -2,11 +2,7 @@
 
 import React, { useMemo, useState } from 'react'
 import {
-  Gauge,
   GitBranch,
-  Zap,
-  Table2,
-  BarChart3,
   ShieldCheck,
   CircleHelp,
   RotateCcw,
@@ -22,10 +18,9 @@ import {
   AlgorithmEvent,
   AlgorithmResult,
   Matrix,
-  puneCities,
   puneMatrix,
   fourCityTestMatrix,
-  runAll,
+  solveBacktracking,
   formatRoute,
   cloneMatrix,
   getCityNames,
@@ -35,19 +30,12 @@ import { RouteMap } from '@/components/route-map'
 import { PlaybackController } from '@/components/playback-controller'
 import { MatrixPanel } from '@/components/matrix-panel'
 import { BacktrackingInspector } from '@/components/backtracking-inspector'
-import { LCBBInspector } from '@/components/lcbb-inspector'
-import { HeldKarpInspector } from '@/components/held-karp-inspector'
-import { ComparisonTab } from '@/components/comparison-tab'
 import { TestSuiteTab } from '@/components/test-suite-tab'
 import { VivaDrawer } from '@/components/viva-drawer'
 
 const tabs = [
-  { id: 'overview', label: 'Overview', icon: Gauge },
-  { id: 'backtracking', label: 'Backtracking', icon: GitBranch },
-  { id: 'lcbb', label: 'Least Cost B&B', icon: Zap },
-  { id: 'held-karp', label: 'Held-Karp DP', icon: Table2 },
-  { id: 'comparison', label: 'Comparison', icon: BarChart3 },
-  { id: 'tests', label: 'Test Results', icon: ShieldCheck }
+  { id: 'visualizer', label: 'Backtracking Visualizer', icon: GitBranch },
+  { id: 'tests', label: 'Test Suite', icon: ShieldCheck }
 ]
 
 function StatCard({ label, value, tone = 'blue' }: { label: string; value: string | number; tone?: string }) {
@@ -60,7 +48,7 @@ function StatCard({ label, value, tone = 'blue' }: { label: string; value: strin
 }
 
 export default function Page() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('visualizer')
   const [cityCount, setCityCount] = useState(8)
   const [customCountInput, setCustomCountInput] = useState('8')
   const [inputError, setInputError] = useState<string | null>(null)
@@ -73,7 +61,6 @@ export default function Page() {
   const [vivaOpen, setVivaOpen] = useState(false)
   const [customMapPath, setCustomMapPath] = useState<number[] | null>(null)
   const [customPrunedEdges, setCustomPrunedEdges] = useState<Array<[number, number]> | null>(null)
-  const [customTransitionEdge, setCustomTransitionEdge] = useState<[number, number] | null>(null)
 
   // Sub-matrix according to current city count
   const currentMatrix = useMemo(() => {
@@ -92,17 +79,10 @@ export default function Page() {
     }
   }, [cityCount, enableLargeAnimation])
 
-  // Run all 3 exact algorithms deterministically on the current matrix
-  const results = useMemo(() => {
-    return runAll(currentMatrix, startCity, solveOptions)
-  }, [currentMatrix, startCity, solveOptions])
-
-  // Selected algorithm result based on active tab
+  // Solve TSP using Backtracking with branch pruning
   const selectedResult: AlgorithmResult = useMemo(() => {
-    if (activeTab === 'lcbb') return results[1]
-    if (activeTab === 'held-karp') return results[2]
-    return results[0] // Default to Backtracking
-  }, [activeTab, results])
+    return solveBacktracking(currentMatrix, startCity, solveOptions)
+  }, [currentMatrix, startCity, solveOptions])
 
   // Active event from timeline
   const activeEvent: AlgorithmEvent = useMemo(() => {
@@ -123,7 +103,7 @@ export default function Page() {
     return events[idx]
   }, [selectedResult, cursor, startCity])
 
-  // Synchronized pruned edges and transition highlights for RouteMap
+  // Synchronized pruned edges for RouteMap
   const activePrunedEdges = useMemo(() => {
     if (customPrunedEdges) return customPrunedEdges
     const edges: Array<[number, number]> = []
@@ -139,18 +119,6 @@ export default function Page() {
     }
     return edges
   }, [customPrunedEdges, activeEvent, cursor, selectedResult.events])
-
-  const activeTransitionEdge = useMemo((): [number, number] | null => {
-    if (customTransitionEdge) return customTransitionEdge
-    if (
-      selectedResult.algorithm === 'held-karp' &&
-      activeEvent?.cell?.from !== undefined &&
-      activeEvent.cell.from >= 0
-    ) {
-      return [activeEvent.cell.from, activeEvent.cell.end]
-    }
-    return null
-  }, [customTransitionEdge, selectedResult.algorithm, activeEvent])
 
   // Current incumbent best cost and route at this exact playback step
   const currentIncumbentCost = useMemo(() => {
@@ -192,7 +160,6 @@ export default function Page() {
     setIsPlaying(false)
     setCustomMapPath(null)
     setCustomPrunedEdges(null)
-    setCustomTransitionEdge(null)
   }
 
   const handleReset = () => {
@@ -206,7 +173,6 @@ export default function Page() {
     setIsPlaying(false)
     setCustomMapPath(null)
     setCustomPrunedEdges(null)
-    setCustomTransitionEdge(null)
   }
 
   const handleLoadFourCity = () => {
@@ -220,14 +186,12 @@ export default function Page() {
     setIsPlaying(false)
     setCustomMapPath(null)
     setCustomPrunedEdges(null)
-    setCustomTransitionEdge(null)
   }
 
   const handleStepChange = (nextStep: number | ((prev: number) => number)) => {
     setCursor(nextStep)
     setCustomMapPath(null)
     setCustomPrunedEdges(null)
-    setCustomTransitionEdge(null)
   }
 
   return (
@@ -242,7 +206,7 @@ export default function Page() {
             <h1>
               ROUTEWISE <span>SMART TOUR ROUTE OPTIMIZER</span>
             </h1>
-            <p>An interactive laboratory for exact TSP algorithms (TY IT • DAA).</p>
+            <p>Travelling Salesperson Problem — Backtracking Algorithm (TY IT • DAA CO4).</p>
           </div>
         </div>
 
@@ -272,7 +236,6 @@ export default function Page() {
                 setIsPlaying(false)
                 setCustomMapPath(null)
                 setCustomPrunedEdges(null)
-                setCustomTransitionEdge(null)
               }}
               className={activeTab === id ? 'nav-item active' : 'nav-item'}
             >
@@ -297,14 +260,16 @@ export default function Page() {
           {/* Workspace Heading & 3 Pastel Stat Cards */}
           <div className="workspace-head">
             <div>
-              <p className="eyebrow">DESIGN & ANALYSIS OF ALGORITHMS • EXACT TSP SOLVER</p>
+              <p className="eyebrow">DESIGN & ANALYSIS OF ALGORITHMS • EXACT TSP BACKTRACKING (CO4)</p>
               <h2>
-                {activeTab === 'overview'
-                  ? 'Find the Shortest Tour with Exact Algorithms'
-                  : tabs.find(t => t.id === activeTab)?.label}
+                {activeTab === 'visualizer'
+                  ? 'Backtracking — Recursive Search Workspace'
+                  : 'Automated Verification & Test Suite'}
               </h2>
               <p className="muted">
-                Compare Backtracking (CO4), Least Cost Branch & Bound (CO5), and Held-Karp Dynamic Programming (CO3).
+                {activeTab === 'visualizer'
+                  ? 'Explore depth-first state-space tree traversal, branch pruning (currentCost + edgeWeight ≥ bestCost), and live LIFO call stack.'
+                  : 'Comprehensive automated verification against Brute Force ground truth and textbook benchmarks.'}
               </p>
             </div>
 
@@ -320,18 +285,11 @@ export default function Page() {
           </div>
 
           {/* Tab Content */}
-          {activeTab === 'comparison' ? (
-            <ComparisonTab
-              matrix={currentMatrix}
-              results={results}
-              names={names}
-              start={startCity}
-            />
-          ) : activeTab === 'tests' ? (
+          {activeTab === 'tests' ? (
             <TestSuiteTab />
           ) : (
             <>
-              {/* Controls bar: City slider, Custom Number of Cities input, Start city dropdown, Algorithm pills */}
+              {/* Controls bar: City slider, Custom Number of Cities input, Start city dropdown */}
               <div className="controls-row flex-wrap gap-3">
                 {/* 1. Existing City-Count Slider (4–8 cities) */}
                 <label className="text-xs text-slate-700 flex items-center gap-2">
@@ -397,7 +355,6 @@ export default function Page() {
                       setIsPlaying(false)
                       setCustomMapPath(null)
                       setCustomPrunedEdges(null)
-                      setCustomTransitionEdge(null)
                     }}
                     className="bg-white text-slate-900 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer"
                     style={{ backgroundColor: '#ffffff', color: '#0f172a' }}
@@ -413,26 +370,6 @@ export default function Page() {
                       </option>
                     ))}
                   </select>
-                </div>
-
-                {/* 4. Algorithm Switcher Pills */}
-                <div className="algorithm-pills ml-auto">
-                  {tabs.slice(1, 4).map(tab => (
-                    <button
-                      key={tab.id}
-                      className={activeTab === tab.id ? 'active' : ''}
-                      onClick={() => {
-                        setActiveTab(tab.id)
-                        setCursor(0)
-                        setIsPlaying(false)
-                        setCustomMapPath(null)
-                        setCustomPrunedEdges(null)
-                        setCustomTransitionEdge(null)
-                      }}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
                 </div>
               </div>
 
@@ -450,7 +387,7 @@ export default function Page() {
                   <div className="flex items-center gap-2.5">
                     <AlertTriangle size={17} className="text-amber-600 flex-none" />
                     <span>
-                      <strong>High Problem Complexity (N = {cityCount}):</strong> Exact TSP algorithms scale exponentially. Step-by-step animation is disabled by default to maintain fast execution and prevent browser lag.
+                      <strong>High Problem Complexity (N = {cityCount}):</strong> Backtracking explores up to (N-1)! permutations. Step-by-step animation is disabled by default to maintain fast execution and prevent browser lag.
                     </span>
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer font-semibold text-amber-800 bg-white/80 px-2.5 py-1 rounded border border-amber-200">
@@ -468,34 +405,39 @@ export default function Page() {
                 </div>
               )}
 
-              {/* Main Visualization Grid: Overview vs. Distinct Algorithm Workspaces */}
-              {activeTab === 'overview' ? (
-                <div className="main-grid">
-                  <RouteMap
-                    matrix={currentMatrix}
-                    names={names}
-                    event={activeEvent}
-                    bestRoute={currentIncumbentRoute || []}
-                    start={startCity}
-                    algorithm={selectedResult.algorithm}
-                    customActivePath={customMapPath}
-                    prunedEdges={activePrunedEdges}
-                    highlightTransition={activeTransitionEdge}
-                  />
+              {/* Main Visualization Grid: RouteMap on Left, Backtracking Workspace on Right */}
+              <div className="algo-workbench-grid">
+                <RouteMap
+                  matrix={currentMatrix}
+                  names={names}
+                  event={activeEvent}
+                  bestRoute={currentIncumbentRoute || []}
+                  start={startCity}
+                  customActivePath={customMapPath}
+                  prunedEdges={activePrunedEdges}
+                />
 
-                  {/* Overview Execution Summary Panel */}
-                  <section className="panel execution">
-                    <div className="panel-head">
-                      <div>
-                        <p className="eyebrow">DETERMINISTIC EVENT REDUCER</p>
-                        <h2>
-                          {selectedResult.algorithm === 'held-karp'
-                            ? 'Held-Karp Dynamic Programming (CO3)'
-                            : selectedResult.algorithm === 'lcbb'
-                            ? 'Least Cost Branch & Bound (CO5)'
-                            : 'Depth-First Backtracking (CO4)'}
-                        </h2>
-                      </div>
+                {/* Backtracking Workbench Panel */}
+                <section className="panel execution">
+                  <div className="panel-head">
+                    <div>
+                      <p className="eyebrow">
+                        CO4 • DEPTH-FIRST RECURSIVE SEARCH & CALL STACK INSPECTOR
+                      </p>
+                      <h2>Backtracking — Recursive Search Workspace</h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {customMapPath && (
+                        <button
+                          onClick={() => {
+                            setCustomMapPath(null)
+                            setCustomPrunedEdges(null)
+                          }}
+                          className="text-[11px] font-semibold px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
+                        >
+                          Reset Map Selection
+                        </button>
+                      )}
                       <span className="status">
                         <i />{' '}
                         {cursor >= selectedResult.events.length - 1
@@ -507,208 +449,30 @@ export default function Page() {
                           : 'EXPLORING'}
                       </span>
                     </div>
+                  </div>
 
-                    {/* Trace Event Info */}
-                    <div className="trace">
-                      <div className="trace-kicker">
-                        EVENT {String(cursor + 1).padStart(3, '0')} /{' '}
-                        {String(selectedResult.events.length).padStart(3, '0')}
-                      </div>
-                      <strong>{activeEvent?.message}</strong>
-                      <p>
-                        {activeEvent?.path && activeEvent.path.length > 0
-                          ? `Current Path: ${formatRoute(activeEvent.path, names)}`
-                          : 'Awaiting execution.'}
-                      </p>
-                    </div>
-
-                    {/* Playback Engine Controls */}
-                    <PlaybackController
-                      currentStep={cursor}
-                      totalSteps={selectedResult.events.length}
-                      isPlaying={isPlaying}
-                      onStepChange={handleStepChange}
-                      onPlayingChange={setIsPlaying}
-                      onReset={() => handleStepChange(0)}
-                    />
-
-                    {/* Step Metric Cards - Synchronized with current event state */}
-                    <div className="metrics">
-                      <div className="stat">
-                        <span>STEP COST</span>
-                        <strong className="text-amber-600 font-mono">
-                          {activeEvent?.cost ?? 0}
-                        </strong>
-                      </div>
-                      <div className="stat">
-                        <span>INCUMBENT BEST</span>
-                        <strong className="text-emerald-600 font-mono">
-                          {currentIncumbentCost}
-                        </strong>
-                      </div>
-                      <div className="stat">
-                        <span>EXPLORED</span>
-                        <strong className="text-slate-800 font-mono">
-                          {activeEvent?.explored ?? 0}
-                        </strong>
-                      </div>
-                      <div className="stat">
-                        <span>PRUNED</span>
-                        <strong className="text-red-600 font-mono">
-                          {activeEvent?.pruned ?? 0}
-                        </strong>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 p-3 rounded-lg border border-slate-200 bg-slate-50/70 text-xs text-slate-600 space-y-2">
-                      <p className="font-semibold text-slate-800">
-                        Select an algorithm workspace tab above to open its specialized laboratory:
-                      </p>
-                      <div className="grid grid-cols-1 gap-1.5">
-                        <button
-                          onClick={() => {
-                            setActiveTab('backtracking')
-                            handleStepChange(0)
-                          }}
-                          className="text-left px-2.5 py-1.5 rounded bg-white border border-blue-200 hover:bg-blue-50 transition-colors"
-                        >
-                          <strong className="text-blue-700">Backtracking (CO4):</strong> Recursive Search Workspace — State-Space DFS Tree + LIFO Call Stack + Decision Log
-                        </button>
-                        <button
-                          onClick={() => {
-                            setActiveTab('lcbb')
-                            handleStepChange(0)
-                          }}
-                          className="text-left px-2.5 py-1.5 rounded bg-white border border-amber-200 hover:bg-amber-50 transition-colors"
-                        >
-                          <strong className="text-amber-700">LCBB (CO5):</strong> Search Optimization Console — Min-Heap Priority Queue + Bound-Labelled Tree + Reduced Matrix
-                        </button>
-                        <button
-                          onClick={() => {
-                            setActiveTab('held-karp')
-                            handleStepChange(0)
-                          }}
-                          className="text-left px-2.5 py-1.5 rounded bg-white border border-teal-200 hover:bg-teal-50 transition-colors"
-                        >
-                          <strong className="text-teal-700">Held-Karp DP (CO3):</strong> Dynamic Programming Lab — 2D Subset DP Spreadsheet + Recurrence Inspector + Parent Traceback
-                        </button>
-                      </div>
-                    </div>
-                  </section>
-                </div>
-              ) : (
-                <div className="algo-workbench-grid">
-                  <RouteMap
-                    matrix={currentMatrix}
-                    names={names}
-                    event={activeEvent}
-                    bestRoute={currentIncumbentRoute || []}
-                    start={startCity}
-                    algorithm={selectedResult.algorithm}
-                    customActivePath={customMapPath}
-                    prunedEdges={activePrunedEdges}
-                    highlightTransition={activeTransitionEdge}
+                  {/* Playback Controls */}
+                  <PlaybackController
+                    currentStep={cursor}
+                    totalSteps={selectedResult.events.length}
+                    isPlaying={isPlaying}
+                    onStepChange={handleStepChange}
+                    onPlayingChange={setIsPlaying}
+                    onReset={() => handleStepChange(0)}
                   />
 
-                  {/* Algorithm-Specific Workbench Panel */}
-                  <section className="panel execution">
-                    <div className="panel-head">
-                      <div>
-                        <p className="eyebrow">
-                          {activeTab === 'backtracking'
-                            ? 'CO4 • DEPTH-FIRST RECURSIVE SEARCH & CALL STACK INSPECTOR'
-                            : activeTab === 'lcbb'
-                            ? 'CO5 • BEST-FIRST PRIORITY QUEUE & REDUCED MATRIX OPTIMIZER'
-                            : 'CO3 • SUBSET BITMASK TABULATION & BELLMAN-HELD-KARP RECURRENCE'}
-                        </p>
-                        <h2>
-                          {activeTab === 'backtracking'
-                            ? 'Backtracking — Recursive Search Workspace'
-                            : activeTab === 'lcbb'
-                            ? 'Least Cost Branch & Bound — Search Optimization Workspace'
-                            : 'Held-Karp — Dynamic Programming Lab'}
-                        </h2>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {customMapPath && (
-                          <button
-                            onClick={() => {
-                              setCustomMapPath(null)
-                              setCustomPrunedEdges(null)
-                              setCustomTransitionEdge(null)
-                            }}
-                            className="text-[11px] font-semibold px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
-                          >
-                            Reset Map Selection
-                          </button>
-                        )}
-                        <span className="status">
-                          <i />{' '}
-                          {cursor >= selectedResult.events.length - 1
-                            ? selectedResult.timedOut
-                              ? 'TIMED OUT'
-                              : selectedResult.cancelled
-                              ? 'CANCELLED'
-                              : 'FINISHED'
-                            : 'EXPLORING'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Shared Playback Controls */}
-                    <PlaybackController
-                      currentStep={cursor}
-                      totalSteps={selectedResult.events.length}
-                      isPlaying={isPlaying}
-                      onStepChange={handleStepChange}
-                      onPlayingChange={setIsPlaying}
-                      onReset={() => handleStepChange(0)}
-                    />
-
-                    {/* Distinct Algorithm Workspace Body */}
-                    {activeTab === 'backtracking' && (
-                      <BacktrackingInspector
-                        result={selectedResult}
-                        event={activeEvent}
-                        names={names}
-                        cursor={cursor}
-                        start={startCity}
-                        onStepSelect={step => handleStepChange(step)}
-                        onHoverOrSelectPath={path => setCustomMapPath(path)}
-                      />
-                    )}
-
-                    {activeTab === 'lcbb' && (
-                      <LCBBInspector
-                        result={selectedResult}
-                        event={activeEvent}
-                        names={names}
-                        cursor={cursor}
-                        start={startCity}
-                        onSelectNodePrefix={(prefix, pruned) => {
-                          setCustomMapPath(prefix)
-                          setCustomPrunedEdges(pruned || null)
-                        }}
-                      />
-                    )}
-
-                    {activeTab === 'held-karp' && (
-                      <HeldKarpInspector
-                        result={selectedResult}
-                        event={activeEvent}
-                        names={names}
-                        matrix={currentMatrix}
-                        cursor={cursor}
-                        start={startCity}
-                        onSelectCellTransition={(path, transition) => {
-                          setCustomMapPath(path)
-                          setCustomTransitionEdge(transition)
-                        }}
-                      />
-                    )}
-                  </section>
-                </div>
-              )}
+                  {/* Backtracking Inspector */}
+                  <BacktrackingInspector
+                    result={selectedResult}
+                    event={activeEvent}
+                    names={names}
+                    cursor={cursor}
+                    start={startCity}
+                    onStepSelect={step => handleStepChange(step)}
+                    onHoverOrSelectPath={path => setCustomMapPath(path)}
+                  />
+                </section>
+              </div>
 
               {/* Lower Section: Input Distance Matrix & Tour Result Inspector */}
               <div className="lower-grid">
@@ -729,7 +493,6 @@ export default function Page() {
                     setIsPlaying(false)
                     setCustomMapPath(null)
                     setCustomPrunedEdges(null)
-                    setCustomTransitionEdge(null)
                   }}
                   onStartChange={newStart => {
                     setStartCity(newStart)
@@ -737,7 +500,6 @@ export default function Page() {
                     setIsPlaying(false)
                     setCustomMapPath(null)
                     setCustomPrunedEdges(null)
-                    setCustomTransitionEdge(null)
                   }}
                   onResetPune={handleReset}
                   onLoadFourCity={handleLoadFourCity}
@@ -785,36 +547,24 @@ export default function Page() {
                   <div className="complexity">
                     <div>
                       <span>TIME COMPLEXITY</span>
-                      <b>
-                        {selectedResult.algorithm === 'held-karp'
-                          ? 'O(n² · 2ⁿ)'
-                          : selectedResult.algorithm === 'lcbb'
-                          ? 'O(2ⁿ · n²)'
-                          : 'O(n!)'}
-                      </b>
+                      <b>O((n − 1)!) worst-case</b>
+                      <small className="text-[9px] text-slate-500 font-normal">
+                        Pruned heavily in practice
+                      </small>
                     </div>
                     <div>
                       <span>SPACE COMPLEXITY</span>
-                      <b>
-                        {selectedResult.algorithm === 'held-karp'
-                          ? 'O(n · 2ⁿ)'
-                          : selectedResult.algorithm === 'lcbb'
-                          ? 'O(2ⁿ · n²)'
-                          : 'O(n)'}
-                      </b>
-                      <small className="text-[9px] text-slate-400">
-                        {selectedResult.algorithm === 'held-karp' ? '(cost & parent DP table)' : ''}
+                      <b>O(n)</b>
+                      <small className="text-[9px] text-slate-500 font-normal">
+                        Recursion call stack & visited array
                       </small>
                     </div>
                     <div>
                       <span>COURSE OUTCOME</span>
-                      <b className="text-blue-700">
-                        {selectedResult.algorithm === 'held-karp'
-                          ? 'CO3 (DP)'
-                          : selectedResult.algorithm === 'lcbb'
-                          ? 'CO5 (B&B)'
-                          : 'CO4 (Backtracking)'}
-                      </b>
+                      <b className="text-blue-700">CO4 (Backtracking)</b>
+                      <small className="text-[9px] text-slate-500 font-normal">
+                        DFS Permutation Search
+                      </small>
                     </div>
                   </div>
                 </section>

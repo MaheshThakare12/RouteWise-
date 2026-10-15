@@ -44,7 +44,6 @@ export function solveBruteForce(matrix: Matrix, start = 0): AlgorithmResult {
     generated: explored,
     explored,
     pruned: 0,
-    dpStates: 0,
     duration: performance.now() - started
   }
 }

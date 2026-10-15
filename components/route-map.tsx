@@ -11,10 +11,8 @@ interface RouteMapProps {
   event?: AlgorithmEvent
   bestRoute: number[]
   start: number
-  algorithm?: AlgorithmName
   customActivePath?: number[] | null
   prunedEdges?: Array<[number, number]>
-  highlightTransition?: [number, number] | null
   modeLabel?: string
 }
 
@@ -24,17 +22,15 @@ export function RouteMap({
   event,
   bestRoute,
   start,
-  algorithm,
   customActivePath,
   prunedEdges = [],
-  highlightTransition = null,
   modeLabel
 }: RouteMapProps) {
   const n = matrix.length
   // Positions for up to 12 cities
   const positions = defaultPositions.slice(0, n)
 
-  // Current partial path in execution (or custom inspected path from tree/DP selection)
+  // Current partial path in execution (or custom inspected path from tree selection)
   const activePath =
     customActivePath && customActivePath.length > 0
       ? customActivePath
@@ -43,7 +39,6 @@ export function RouteMap({
       : [start]
   const isFinished = event?.type === 'FINISHED' && bestRoute.length > 1
   const isIncumbent = event?.type === 'BEST_SOLUTION_FOUND'
-  const isTraceback = event?.type === 'TRACEBACK_STEP'
 
   // Dynamic scaling for vertex radius and typography based on city count (4 to 12)
   const nodeRadius = n <= 6 ? 4.2 : n <= 9 ? 3.9 : 3.5
@@ -57,14 +52,7 @@ export function RouteMap({
           <MapPin size={13} /> ILLUSTRATIVE NETWORK GRAPH ({n} CITIES)
         </span>
         <em>
-          {modeLabel ||
-            (algorithm === 'backtracking'
-              ? 'Synchronized with DFS Recursion Path & Pruning'
-              : algorithm === 'lcbb'
-              ? 'Synchronized with Selected LCBB Node Prefix & Pruned Branches'
-              : algorithm === 'held-karp'
-              ? 'Synchronized with DP Predecessor Transition & Traceback'
-              : 'Synthetic Pune demonstration coordinates')}
+          {modeLabel || 'Synchronized with DFS Recursion Branch & Pruning'}
         </em>
       </div>
 
@@ -132,7 +120,7 @@ export function RouteMap({
             )}
           </g>
 
-          {/* 1b. LAYER 1b: Pruned Branch Edges (Backtracking & LCBB) */}
+          {/* 1b. LAYER 1b: Pruned Branch Edges (Backtracking) */}
           {prunedEdges.length > 0 && (
             <g className="edges-pruned">
               {prunedEdges.map(([u, v], idx) => {
@@ -170,33 +158,12 @@ export function RouteMap({
                     className={
                       isIncumbent || isFinished
                         ? 'edge-win'
-                        : isTraceback
-                        ? 'edge-final'
                         : 'edge-active'
                     }
                   />
                 )
               })}
           </g>
-
-          {/* 2b. LAYER 2b: Highlighted Candidate Predecessor / Child Transition Edge */}
-          {highlightTransition &&
-            highlightTransition[0] >= 0 &&
-            highlightTransition[1] >= 0 &&
-            highlightTransition[0] < positions.length &&
-            highlightTransition[1] < positions.length && (
-              <g className="edge-transition-highlight">
-                <line
-                  x1={positions[highlightTransition[0]][0]}
-                  y1={positions[highlightTransition[0]][1]}
-                  x2={positions[highlightTransition[1]][0]}
-                  y2={positions[highlightTransition[1]][1]}
-                  stroke={algorithm === 'held-karp' ? '#0d9488' : '#dc2626'}
-                  strokeWidth="1.25"
-                  strokeDasharray="1.8 1.0"
-                />
-              </g>
-            )}
 
           {/* 3. LAYER 3: Optimal Global Tour Overlay on Finish */}
           <g className="edges-optimal">
@@ -386,7 +353,7 @@ export function RouteMap({
           </span>
         )}
         <span>
-          <i className="dot blue" /> Optimal / Traceback Tour
+          <i className="dot blue" /> Optimal Tour
         </span>
         <span className="ml-auto text-[10px] text-slate-500 font-mono">
           Permanent Vertex Numbers: 1 through {n}
